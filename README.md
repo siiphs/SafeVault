@@ -1,4 +1,8 @@
 # Uso
+## Dependencias necesarias
+```bash
+pip install aiocoap
+```
 ## Montar servidor
 ```bash
 python server.py
