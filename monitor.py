@@ -44,7 +44,7 @@ class Monitor:
         self.logger.registrar(datos, resultado)
 
         # Enviar señal de activación si es necesario
-        if resultado:
+        if resultado and resultado.get("activar"):
             Trigger.trigger_actuator()
 
         # Mostrar estado

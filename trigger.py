@@ -1,9 +1,10 @@
-from socket import socket
+import socket
 import json
 import time
 
 class Trigger:
-
+ 
+ @staticmethod
  def trigger_actuator(actuator_host='127.0.0.1', actuator_port=6000):
     
     # Crear el socket para conectar con el actuador
