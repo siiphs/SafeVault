@@ -1,6 +1,6 @@
 from detector import Detector
 from logger import EventLogger
-
+from trigger import Trigger
 
 class Monitor:
 
@@ -42,6 +42,10 @@ class Monitor:
 
         # Registrar el evento
         self.logger.registrar(datos, resultado)
+
+        # Enviar señal de activación si es necesario
+        if resultado:
+            Trigger.trigger_actuator()
 
         # Mostrar estado
         print("Estado:", resultado["estado"])
