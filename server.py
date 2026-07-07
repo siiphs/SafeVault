@@ -26,7 +26,7 @@ def menu_conserje(monitor_instancia):
                     else:
                         monitor_instancia.resolver_alerta(piso_a_resolver, autorizado=False)
         except Exception as e:
-            print(f"[ERROR CONSERJE] {e}")
+            print(f"ERROR CONSERJE {e}")
 
 
 async def main():

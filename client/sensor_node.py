@@ -2,7 +2,7 @@ import asyncio
 import json
 import os
 import random
-import sys  # Importamos sys para poder pasar parámetros por consola opcionalmente
+import sys 
 
 from aiocoap import *
 from cryptography.fernet import InvalidToken
@@ -19,14 +19,14 @@ NODE_ID = 1
 PISO = "1"  # Por defecto asignado al piso 1
 
 SERVER_URL = "coap://127.0.0.1:5683/sensor"
-INTERVALO = 5      # en segundos
+INTERVALO = 5    
 
 
 # Generación de sensores
 def generar_datos():
     return {
         "id": NODE_ID,
-        "piso": PISO,  # Enviamos el piso para que el Monitor sepa qué actuador activar
+        "piso": PISO,  
         "gas": random.randint(100, 2000),
         "humo": random.random() < 0.15,
         "temperatura": random.randint(15, 90),
@@ -86,7 +86,7 @@ async def enviar_datos():
 
         except Exception as e:
             print("\nNo fue posible conectar con el servidor.")
-            print("Reintentando en 5 segundos...")
+            print("Reintentando en 5 segundos")
             print(e)
 
         await asyncio.sleep(INTERVALO)
@@ -97,7 +97,7 @@ if __name__ == "__main__":
         NODE_ID = int(sys.argv[1])
         PISO = sys.argv[2]
     else:
-        print("[INFO] Usando valores por defecto. Puedes personalizarlos usando:")
+        print("Usando valores por defecto. Puedes personalizarlos usando:")
         print("       python sensor_node.py <ID_NODO> <PISO>")
         print("Ejemplo: python sensor_node.py 2 2\n")
 

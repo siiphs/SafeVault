@@ -33,7 +33,7 @@ def handle_server_command(conn, addr):
             print("Comando rechazado, payload inválido")
             return
 
-        print(f"[COMANDO RECIBIDO Y DESCIFRADO] Procesando señal: {payload}")
+        print(f"Procesando señal: {payload}")
 
         # Validar si el comando es para activarse
         if payload.get("command") == "ACTIVATE":
@@ -65,7 +65,7 @@ def start_actuator():
     server_socket.bind((ACTUATOR_HOST, ACTUATOR_PORT))
     server_socket.listen()
 
-    print(f"[*] Actuador {ACTUATOR_ID} escuchando en {ACTUATOR_HOST}:{ACTUATOR_PORT}...")
+    print(f" Actuador {ACTUATOR_ID} escuchando en {ACTUATOR_HOST}:{ACTUATOR_PORT}")
 
     try:
         while True:
@@ -73,7 +73,7 @@ def start_actuator():
             thread = threading.Thread(target=handle_server_command, args=(conn, addr))
             thread.start()
     except KeyboardInterrupt:
-        print(f"\n[*] Apagando nodo actuador {ACTUATOR_ID}.")
+        print(f"\nApagando nodo actuador {ACTUATOR_ID}.")
     finally:
         server_socket.close()
 
