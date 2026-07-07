@@ -60,7 +60,7 @@ async def enviar_datos():
 
         # Antes se enviaba el JSON en bruto. Ahora el payload viaja cifrado.
         payload = encrypt_json(datos)
-        print(f"[SEGURIDAD] Payload CoAP cifrado enviado ({len(payload)} bytes).")
+        print(f"Payload CoAP cifrado enviado ({len(payload)} bytes).")
 
         request = Message(
             code=POST,
@@ -74,7 +74,7 @@ async def enviar_datos():
             try:
                 respuesta = decrypt_json(response.payload)
             except InvalidToken:
-                print("\n[SEGURIDAD] La respuesta del servidor no pudo descifrarse.")
+                print("\nLa respuesta del servidor no pudo descifrarse.")
                 print("Respuesta recibida:", response.payload.decode("utf-8", errors="replace"))
                 await asyncio.sleep(INTERVALO)
                 continue
@@ -93,7 +93,6 @@ async def enviar_datos():
 
 
 if __name__ == "__main__":
-    # Opcional: Permite pasar el ID del nodo y el Piso por consola para levantar los 3 sensores fácil
     if len(sys.argv) == 3:
         NODE_ID = int(sys.argv[1])
         PISO = sys.argv[2]

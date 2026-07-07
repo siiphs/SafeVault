@@ -20,7 +20,7 @@ ACTUATOR_ID = "ACT_VALVULA_GENERICA"
 
 
 def handle_server_command(conn, addr):
-    print(f"[CONEXIÓN] Servidor conectado desde {addr}")
+    print(f" Servidor conectado desde {addr}")
     try:
         # Recibir la señal de activación cifrada
         data = conn.recv(4096)
@@ -30,14 +30,14 @@ def handle_server_command(conn, addr):
         try:
             payload = decrypt_json(data)
         except InvalidToken:
-            print("[SEGURIDAD] Comando rechazado: payload inválido, manipulado o con clave incorrecta.")
+            print("Comando rechazado, payload inválido")
             return
 
         print(f"[COMANDO RECIBIDO Y DESCIFRADO] Procesando señal: {payload}")
 
         # Validar si el comando es para activarse
         if payload.get("command") == "ACTIVATE":
-            print(f"[{ACTUATOR_ID}] SIMULACIÓN: Ejecutando acción física en la red...")
+            print(f"[{ACTUATOR_ID}] Activando sistema ciberfisico")
 
             # Generar mensaje de confirmación (ACK)
             response = {
@@ -49,12 +49,12 @@ def handle_server_command(conn, addr):
 
             # Enviar la confirmación cifrada de vuelta al servidor
             conn.sendall(encrypt_json(response))
-            print(f"[CONFIRMACIÓN ENVIADA] ACK cifrado enviado al servidor.")
+            print(f"ACK cifrado enviado al servidor.")
 
     except json.JSONDecodeError as e:
-        print(f"[ERROR] JSON inválido después de descifrar: {e}")
+        print(f" JSON inválido después de descifrar: {e}")
     except Exception as e:
-        print(f"[ERROR] Error procesando comando: {e}")
+        print(f"Error procesando comando: {e}")
     finally:
         conn.close()
 
@@ -84,8 +84,8 @@ if __name__ == "__main__":
         ACTUATOR_ID = sys.argv[1]
         ACTUATOR_PORT = int(sys.argv[2])
     else:
-        print("[INFO] Iniciando con valores por defecto. Puedes pasar parámetros:")
-        print("       python actuator_node.py <ID_ACTUADOR> <PUERTO>")
+        print("Iniciando con valores por defecto. Puedes pasar parámetros:")
+        print("    python actuator_node.py <ID_ACTUADOR> <PUERTO>")
         print("Ejemplo: python actuator_node.py ACT_PISO_1 6001\n")
 
     start_actuator()

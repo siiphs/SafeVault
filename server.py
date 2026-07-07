@@ -6,22 +6,18 @@ from aiocoap.resource import Site
 
 from resources import SensorResource
 from monitor import Monitor
+import time
 
 
 def menu_conserje(monitor_instancia):
-    """Bucle interactivo para el conserje que corre en un hilo separado."""
+    #Bucle en la terminal para que el conserje vea las alertas, y decida si activar los actuadores
     while True:
         try:
-            # Pausa breve para no pisar inmediatamente los prints de CoAP al arrancar
-            import time
             time.sleep(1)
             
             pendientes = monitor_instancia.mostrar_alertas_pendientes()
             if pendientes:
-                print(f"\n" + "!" * 30)
-                print(f"[CONSERJERÍA] ¡ALERTA! Pisos esperando confirmación: {pendientes}")
-                print("!" * 30)
-                
+                print(f"¡ALERTA! Pisos esperando confirmación: {pendientes}")
                 piso_a_resolver = input("Ingrese el número del piso para responder (o Enter para omitir): ").strip()
                 if piso_a_resolver in pendientes:
                     decision = input(f"¿Confirmar y activar actuadores en Piso {piso_a_resolver}? (s/n): ").strip().lower()
@@ -52,7 +48,7 @@ async def main():
     print("Escuchando en el puerto 5683...")
     print("=" * 50)
 
-    # NUEVO: Ejecuta el menú del conserje en background de manera no bloqueante
+    # Para ejecutar el menu del conserje
     asyncio.create_task(asyncio.to_thread(menu_conserje, monitor))
 
     # Mantiene el servidor vivo

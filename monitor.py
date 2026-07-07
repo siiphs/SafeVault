@@ -12,14 +12,14 @@ class Monitor:
         self.detector = Detector()
         self.logger = EventLogger()
 
-        # TABLA DE RED: Asocia el piso con el puerto TCP del actuador
+        # Tabla de puertos para cada piso
         self.TABLA_PISOS = {
             "1": 6001,
             "2": 6002,
             "3": 6003
         }
 
-        # NUEVO: Almacena las alertas que esperan aprobación del conserje
+        # Alertas que verá el conserje
         self.alertas_pendientes = {}
 
     def procesar_datos(self, datos):
@@ -40,44 +40,41 @@ class Monitor:
         resultado = self.detector.analizar(datos)
         self.logger.registrar(datos, resultado)
 
-        # NUEVA LÓGICA INTERMEDIA:
+        # Si recibe peligro, primero lo guarda en pendiente y espera confirmacion
         if resultado and resultado.get("activar"):
             piso_sensor = str(datos.get("piso", "1"))
             
-            # En lugar de disparar el Trigger, lo guardamos en pendientes
+            # guarda la alerta para que la vea el conserje
             self.alertas_pendientes[piso_sensor] = {
                 "nodo": id_nodo,
                 "datos": datos
             }
-            print(f"\n[ALERTA INTERCEPTADA] Peligro en Piso {piso_sensor}. Esperando confirmación del Conserje...")
+            print(f"\n Peligro en Piso {piso_sensor}. Conserje confirme")
 
         print("Estado:", resultado["estado"])
         return resultado
 
-    # =========================================================================
-    # NUEVOS MÉTODOS PARA EL CONSERJE
-    # =========================================================================
     def mostrar_alertas_pendientes(self):
-        """Muestra al conserje qué pisos requieren atención inmediata."""
+        #Muestra las alertas pendientes al conserje en la terminal
         return list(self.alertas_pendientes.keys())
 
     def resolver_alerta(self, piso, autorizado=True):
-        """El conserje decide si activa la red de actuadores o cancela la alerta."""
+        #El conserje decide si activar o no los sistemas de emergencia
         piso = str(piso)
         if piso not in self.alertas_pendientes:
-            print(f"[CONSERJERÍA] No hay alertas pendientes para el Piso {piso}.")
+            print(f"No hay alertas pendientes para el Piso {piso}.")
             return False
 
         if autorizado:
-            print(f"\n[CONSERJERÍA] Alerta CONFIRMADA por conserje para el Piso {piso}.")
+            print(f"\nAlerta confirmada por conserje para el Piso {piso}.")
             puerto_destino = self.TABLA_PISOS.get(piso)
             if puerto_destino:
-                # La señal de red viaja RECIÉN ahora hacia el actuador
+                # Se autoriza la activación.
                 Trigger.trigger_actuator(actuator_port=puerto_destino)
             else:
-                print(f"[ERROR RED] No hay puerto para el piso {piso}")
+                print(f"No hay puerto para el piso {piso}")
         else:
-            print(f"\n[CONSERJERÍA] Alerta RECHAZADA (Falsa Alarma) por conserje para el Piso {piso}.")
+            print(f"\n Falsa alarma decretada por conserje para el Piso {piso}.")
 
         # Quitar de la lista de pendientes una vez resuelta
         del self.alertas_pendientes[piso]

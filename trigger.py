@@ -26,7 +26,7 @@ class Trigger:
             # Enviar comando cifrado por TCP. Así Wireshark tampoco muestra el JSON del actuador.
             encrypted_command = encrypt_json(command_payload)
             client_socket.sendall(encrypted_command)
-            print(f"[SEGURIDAD] Comando TCP cifrado enviado al actuador en puerto {actuator_port}.")
+            print(f"Comando TCP cifrado enviado al actuador en puerto {actuator_port}.")
 
             # Esperar la confirmación (ACK) cifrada del actuador
             raw_response = client_socket.recv(4096)
@@ -34,23 +34,23 @@ class Trigger:
                 try:
                     response = decrypt_json(raw_response)
                 except InvalidToken:
-                    print("[SEGURIDAD] ACK rechazado: no se pudo descifrar o fue manipulado.")
+                    print("ACK rechazado: no se pudo descifrar o fue manipulado.")
                     return False
 
-                print(f"[ACK RECIBIDO] El actuador confirmó la acción de red:")
-                print(f"    ID Actuador: {response.get('actuator_id')}")
-                print(f"    Estado: {response.get('status')}")
-                print(f"    Mensaje: {response.get('message')}")
+                print(f"El actuador confirmó la acción de red:")
+                print(f"ID Actuador: {response.get('actuator_id')}")
+                print(f"Estado: {response.get('status')}")
+                print(f"Mensaje: {response.get('message')}")
                 return True
             else:
-                print("[ERROR DE RED] El actuador cerró la conexión sin responder.")
+                print("El actuador cerró la conexión sin responder.")
                 return False
 
         except ConnectionRefusedError:
-            print(f"[ERROR DE RED] No se pudo conectar al actuador en {actuator_host}:{actuator_port}. ¿Está encendido el nodo?")
+            print(f"No se pudo conectar al actuador en {actuator_host}:{actuator_port}. ¿Está encendido el nodo?")
             return False
         except Exception as e:
-            print(f"[ERROR] Error en la comunicación con el actuador: {e}")
+            print(f"Error en la comunicación con el actuador: {e}")
             return False
         finally:
             client_socket.close()
