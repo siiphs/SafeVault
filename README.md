@@ -31,3 +31,8 @@ python actuator_node.py ACT_PISO_2 6002
 # ACTUADORES PISO 3
 python actuator_node.py ACT_PISO_3 6003
 ```
+
+## Para el conserje
+```bash
+#Segun las alertas eliga que piso proviene la alerta, digitando el numero de dicho piso
+#Luego acepta la alerta con s para activar las medidas de emergencia o n en caso de detectar falso positivo.
