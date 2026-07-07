@@ -1,13 +1,22 @@
 import asyncio
 import json
+import os
 import random
 import sys  # Importamos sys para poder pasar parámetros por consola opcionalmente
 
 from aiocoap import *
+from cryptography.fernet import InvalidToken
+
+# Permite importar security.py desde la carpeta raíz aunque este script esté en client/
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
+
+from security import decrypt_json, encrypt_json
 
 # Configuración del nodo
 NODE_ID = 1
-PISO = "1"  # <--- NUEVO: Por defecto asignado al piso 1
+PISO = "1"  # Por defecto asignado al piso 1
 
 SERVER_URL = "coap://127.0.0.1:5683/sensor"
 INTERVALO = 5      # en segundos
@@ -17,7 +26,7 @@ INTERVALO = 5      # en segundos
 def generar_datos():
     return {
         "id": NODE_ID,
-        "piso": PISO,  # <--- NUEVO: Enviamos el piso a la red para que el Monitor sepa qué actuador activar
+        "piso": PISO,  # Enviamos el piso para que el Monitor sepa qué actuador activar
         "gas": random.randint(100, 2000),
         "humo": random.random() < 0.15,
         "temperatura": random.randint(15, 90),
@@ -45,11 +54,14 @@ async def enviar_datos():
         datos = generar_datos()
 
         print("\n==========================")
-        print("Datos enviados")
+        print("Datos generados por el sensor")
         print(json.dumps(datos, indent=4))
         print("==========================")
 
-        payload = json.dumps(datos).encode("utf-8")
+        # Antes se enviaba el JSON en bruto. Ahora el payload viaja cifrado.
+        payload = encrypt_json(datos)
+        print(f"[SEGURIDAD] Payload CoAP cifrado enviado ({len(payload)} bytes).")
+
         request = Message(
             code=POST,
             uri=SERVER_URL,
@@ -58,9 +70,16 @@ async def enviar_datos():
 
         try:
             response = await protocolo.request(request).response
-            respuesta = json.loads(response.payload.decode())
 
-            print("\nRespuesta del servidor")
+            try:
+                respuesta = decrypt_json(response.payload)
+            except InvalidToken:
+                print("\n[SEGURIDAD] La respuesta del servidor no pudo descifrarse.")
+                print("Respuesta recibida:", response.payload.decode("utf-8", errors="replace"))
+                await asyncio.sleep(INTERVALO)
+                continue
+
+            print("\nRespuesta del servidor descifrada")
             print(json.dumps(respuesta, indent=4))
 
             ejecutar_acciones(respuesta)

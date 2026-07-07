@@ -2,6 +2,9 @@ import json
 
 import aiocoap
 import aiocoap.resource as resource
+from cryptography.fernet import InvalidToken
+
+from security import decrypt_json, encrypt_json
 
 
 class SensorResource(resource.Resource):
@@ -13,19 +16,28 @@ class SensorResource(resource.Resource):
     async def render_post(self, request):
 
         try:
-            # Convertir la entrada a un diccionario
-            payload = request.payload.decode("utf-8")
-            datos = json.loads(payload)
+            # El payload recibido por CoAP viene cifrado. Wireshark solo verá bytes/token,
+            # no el JSON original del sensor.
+            datos = decrypt_json(request.payload)
 
-            print("\n===== Mensaje recibido =====")
+            print("\n===== Mensaje CoAP recibido y descifrado =====")
             print(datos)
 
             # Procesar la información
             respuesta = self.monitor.procesar_datos(datos)
 
+            # La respuesta al sensor también viaja cifrada.
             return aiocoap.Message(
                 code=aiocoap.CONTENT,
-                payload=json.dumps(respuesta).encode("utf-8")
+                payload=encrypt_json(respuesta)
+            )
+
+        except InvalidToken:
+            print("[SEGURIDAD] Mensaje rechazado: payload inválido, manipulado o con clave incorrecta.")
+
+            return aiocoap.Message(
+                code=aiocoap.UNAUTHORIZED,
+                payload=b"Mensaje no autorizado"
             )
 
         except json.JSONDecodeError:

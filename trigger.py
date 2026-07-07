@@ -1,6 +1,10 @@
 import socket
-import json
 import time
+
+from cryptography.fernet import InvalidToken
+
+from security import decrypt_json, encrypt_json
+
 
 class Trigger:
 
@@ -19,13 +23,20 @@ class Trigger:
                 "reason": "Umbral de sensor excedido"
             }
 
-            # Enviar comando
-            client_socket.sendall(json.dumps(command_payload).encode('utf-8'))
+            # Enviar comando cifrado por TCP. Así Wireshark tampoco muestra el JSON del actuador.
+            encrypted_command = encrypt_json(command_payload)
+            client_socket.sendall(encrypted_command)
+            print(f"[SEGURIDAD] Comando TCP cifrado enviado al actuador en puerto {actuator_port}.")
 
-            # Esperar la confirmación (ACK) del actuador
-            raw_response = client_socket.recv(1024).decode('utf-8')
+            # Esperar la confirmación (ACK) cifrada del actuador
+            raw_response = client_socket.recv(4096)
             if raw_response:
-                response = json.loads(raw_response)
+                try:
+                    response = decrypt_json(raw_response)
+                except InvalidToken:
+                    print("[SEGURIDAD] ACK rechazado: no se pudo descifrar o fue manipulado.")
+                    return False
+
                 print(f"[ACK RECIBIDO] El actuador confirmó la acción de red:")
                 print(f"    ID Actuador: {response.get('actuator_id')}")
                 print(f"    Estado: {response.get('status')}")
