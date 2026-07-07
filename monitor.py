@@ -13,6 +13,13 @@ class Monitor:
         self.detector = Detector()
         self.logger = EventLogger()
 
+        # TABLA DE RED: Asocia el piso con el puerto TCP del actuador correspondiente
+        self.TABLA_PISOS = {
+            "1": 6001,
+            "2": 6002,
+            "3": 6003
+        }
+
     def procesar_datos(self, datos):
         # Verificar que existan los campos mínimos
         campos = ["id", "gas", "humo", "temperatura", "voltaje"]
@@ -45,7 +52,14 @@ class Monitor:
 
         # Enviar señal de activación si es necesario
         if resultado and resultado.get("activar"):
-            Trigger.trigger_actuator()
+            # Obtenemos el piso del sensor (por defecto el "1" si no se envía)
+            piso_sensor = str(datos.get("piso", "1"))
+            puerto_destino = self.TABLA_PISOS.get(piso_sensor)
+            
+            if puerto_destino:
+                Trigger.trigger_actuator(actuator_port=puerto_destino)
+            else:
+                print(f"[ERROR RED] No existe un puerto asignado para el piso {piso_sensor}")
 
         # Mostrar estado
         print("Estado:", resultado["estado"])
