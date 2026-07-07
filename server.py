@@ -1,10 +1,36 @@
 import asyncio
+import sys
 
 from aiocoap import Context
 from aiocoap.resource import Site
 
 from resources import SensorResource
 from monitor import Monitor
+
+
+def menu_conserje(monitor_instancia):
+    """Bucle interactivo para el conserje que corre en un hilo separado."""
+    while True:
+        try:
+            # Pausa breve para no pisar inmediatamente los prints de CoAP al arrancar
+            import time
+            time.sleep(1)
+            
+            pendientes = monitor_instancia.mostrar_alertas_pendientes()
+            if pendientes:
+                print(f"\n" + "!" * 30)
+                print(f"[CONSERJERÍA] ¡ALERTA! Pisos esperando confirmación: {pendientes}")
+                print("!" * 30)
+                
+                piso_a_resolver = input("Ingrese el número del piso para responder (o Enter para omitir): ").strip()
+                if piso_a_resolver in pendientes:
+                    decision = input(f"¿Confirmar y activar actuadores en Piso {piso_a_resolver}? (s/n): ").strip().lower()
+                    if decision == 's':
+                        monitor_instancia.resolver_alerta(piso_a_resolver, autorizado=True)
+                    else:
+                        monitor_instancia.resolver_alerta(piso_a_resolver, autorizado=False)
+        except Exception as e:
+            print(f"[ERROR CONSERJE] {e}")
 
 
 async def main():
@@ -25,6 +51,9 @@ async def main():
     print("SafeVault - Servidor CoAP iniciado")
     print("Escuchando en el puerto 5683...")
     print("=" * 50)
+
+    # NUEVO: Ejecuta el menú del conserje en background de manera no bloqueante
+    asyncio.create_task(asyncio.to_thread(menu_conserje, monitor))
 
     # Mantiene el servidor vivo
     await asyncio.get_running_loop().create_future()
