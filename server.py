@@ -10,7 +10,11 @@ import time
 
 
 def menu_conserje(monitor_instancia):
+<<<<<<< HEAD
+    #Bucle interactivo para el conserje que corre en un hilo separado.
+=======
     #Bucle en la terminal para que el conserje vea las alertas, y decida si activar los actuadores
+>>>>>>> cf0a572d050d95be350e9de6ac1ea0ae191b5ecd
     while True:
         try:
             time.sleep(1)

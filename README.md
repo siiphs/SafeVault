@@ -1,6 +1,7 @@
 # Uso
 ## Dependencias necesarias
 ```bash
+pip install cryptography 
 pip install aiocoap
 ```
 ## Montar servidor
